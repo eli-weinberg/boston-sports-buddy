@@ -5,35 +5,40 @@ teams:
   - patriots
   - revolution
 
-# How many minutes between monitoring runs (when running in daemon mode)
+# How many minutes between monitoring runs (daemon mode)
 schedule:
   interval_minutes: 30
 
-# News sources to poll
+# ── Sources ────────────────────────────────────────────────────────────────
 sources:
-  espn:
-    enabled: true
   rss:
     enabled: true
-    feeds:
-      - https://www.espn.com/espn/rss/nba/news
-      - https://www.espn.com/espn/rss/nhl/news
-      - https://www.espn.com/espn/rss/mlb/news
-      - https://www.espn.com/espn/rss/nfl/news
-  reddit:
-    enabled: false   # set to true after adding REDDIT_* env vars
-    subreddits:
-      - bostonceltics
-      - BostonBruins
-      - redsox
-      - Patriots
+    # Omit `feeds` to use the full DEFAULT_FEEDS catalog in rss.py (recommended).
+    # Uncomment and list specific feeds to override:
+    # feeds:
+    #   - https://www.espn.com/espn/rss/nba/news
 
-# Where to send highlights
+  reddit:
+    enabled: false   # set to true after adding REDDIT_CLIENT_ID/SECRET to .env
+    # Omit subreddits to use SUBREDDIT_CONFIG defaults in reddit.py (recommended).
+    # subreddits:
+    #   - bostonceltics
+    #   - BostonBruins
+    #   - redsox
+    #   - Patriots
+    #   - sportsgossip
+    sort: hot        # hot | new | top
+
+  web:
+    enabled: true    # scrapes WEEI, NBC Sports Boston (no login needed)
+
+# ── Delivery ───────────────────────────────────────────────────────────────
 delivery:
   channel: console   # console | slack | email
 
-# Claude scoring settings
+# ── Claude scoring ─────────────────────────────────────────────────────────
 scoring:
   model: claude-sonnet-5
-  top_n: 5           # How many stories to highlight per run
-  min_score: 0.6     # Minimum relevance score (0-1) to include
+  top_n: 8           # How many stories to highlight per run
+  min_score: 0.55    # Minimum score to surface (0–1); lowered to catch gossip/obscurities
+  batch_size: 30     # Stories per Claude API call
