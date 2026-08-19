@@ -19,25 +19,11 @@ def fetch_stories() -> list[Story]:
 
     source_cfg = settings.get("sources", {})
 
-    # ── RSS ──────────────────────────────────────────────────────────────
+    # ── RSS (includes Reddit public feeds + all other sources) ────────────
     rss_cfg = source_cfg.get("rss", {})
     if rss_cfg.get("enabled", True):
-        custom_feeds = rss_cfg.get("feeds")  # None → use DEFAULT_FEEDS
+        custom_feeds = rss_cfg.get("feeds") or None  # None → use DEFAULT_FEEDS
         add(fetch_rss(custom_feeds))
-
-    # ── Reddit ────────────────────────────────────────────────────────────
-    reddit_cfg = source_cfg.get("reddit", {})
-    if reddit_cfg.get("enabled", False):
-        try:
-            from src.sources.reddit import fetch_subreddits  # noqa: PLC0415
-
-            subreddits = reddit_cfg.get("subreddits") or None  # None → use defaults
-            sort = reddit_cfg.get("sort", "hot")
-            add(fetch_subreddits(subreddits, sort=sort))
-        except ImportError:
-            print("[monitor] Reddit source requires praw: pip install praw")
-        except KeyError as exc:
-            print(f"[monitor] Reddit credentials missing: {exc}. Set REDDIT_CLIENT_ID/SECRET in .env")
 
     # ── Web scraping ──────────────────────────────────────────────────────
     web_cfg = source_cfg.get("web", {})

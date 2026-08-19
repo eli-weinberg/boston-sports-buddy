@@ -14,23 +14,17 @@ sources:
   rss:
     enabled: true
     # Omit `feeds` to use the full DEFAULT_FEEDS catalog in rss.py (recommended).
+    # This includes ESPN, Boston Globe/Herald, MassLive, SB Nation blogs,
+    # ProFootballTalk, Barstool, TMZ Sports, and Reddit public RSS feeds
+    # (r/bostonceltics, r/BostonBruins, r/redsox, r/Patriots, r/sportsgossip,
+    #  r/PatriotsDynasty, r/nbagoat, r/hockeynostalgia, and more).
     # Uncomment and list specific feeds to override:
     # feeds:
+    #   - https://www.reddit.com/r/bostonceltics/.rss
     #   - https://www.espn.com/espn/rss/nba/news
 
-  reddit:
-    enabled: false   # set to true after adding REDDIT_CLIENT_ID/SECRET to .env
-    # Omit subreddits to use SUBREDDIT_CONFIG defaults in reddit.py (recommended).
-    # subreddits:
-    #   - bostonceltics
-    #   - BostonBruins
-    #   - redsox
-    #   - Patriots
-    #   - sportsgossip
-    sort: hot        # hot | new | top
-
   web:
-    enabled: true    # scrapes WEEI, NBC Sports Boston (no login needed)
+    enabled: true    # scrapes WEEI and NBC Sports Boston
 
 # ── Delivery ───────────────────────────────────────────────────────────────
 delivery:
@@ -40,5 +34,5 @@ delivery:
 scoring:
   model: claude-sonnet-5
   top_n: 8           # How many stories to highlight per run
-  min_score: 0.55    # Minimum score to surface (0–1); lowered to catch gossip/obscurities
+  min_score: 0.55    # Minimum score to surface (0–1)
   batch_size: 30     # Stories per Claude API call

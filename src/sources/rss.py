@@ -108,6 +108,24 @@ DEFAULT_FEEDS: list[tuple[str, str]] = [
     # ── Gossip / celebrity crossover ──────────────────────────────────────
     ("TMZ Sports",          "https://www.tmz.com/sports/rss.xml"),
     ("Page Six Sports",     "https://pagesix.com/sports/feed/"),
+    # ── Reddit (public RSS — no auth required) ────────────────────────────
+    # Team subreddits — all posts, filtered by Boston keywords downstream
+    ("r/bostonceltics",       "https://www.reddit.com/r/bostonceltics/.rss"),
+    ("r/BostonBruins",        "https://www.reddit.com/r/BostonBruins/.rss"),
+    ("r/redsox",              "https://www.reddit.com/r/redsox/.rss"),
+    ("r/Patriots",            "https://www.reddit.com/r/Patriots/.rss"),
+    ("r/NewEnglandRevolution","https://www.reddit.com/r/newenglandrevolution/.rss"),
+    # Broader league subs — keyword-filtered for Boston relevance
+    ("r/nba",                 "https://www.reddit.com/r/nba/.rss"),
+    ("r/hockey",              "https://www.reddit.com/r/hockey/.rss"),
+    ("r/baseball",            "https://www.reddit.com/r/baseball/.rss"),
+    ("r/nfl",                 "https://www.reddit.com/r/nfl/.rss"),
+    # Gossip / nostalgia / debate — surfaces former player stories
+    ("r/sportsgossip",        "https://www.reddit.com/r/sportsgossip/.rss"),
+    ("r/PatriotsDynasty",     "https://www.reddit.com/r/PatriotsDynasty/.rss"),
+    ("r/nbagoat",             "https://www.reddit.com/r/nbagoat/.rss"),
+    ("r/baseball_legends",    "https://www.reddit.com/r/baseball_legends/.rss"),
+    ("r/hockeynostalgia",     "https://www.reddit.com/r/hockeynostalgia/.rss"),
 ]
 
 
@@ -116,15 +134,23 @@ def _is_relevant(text: str) -> bool:
     return any(kw in lower for kw in ALL_KEYWORDS)
 
 
+_HTML_TAG_RE = __import__("re").compile(r"<[^>]+>")
+
+
+def _strip_html(text: str) -> str:
+    """Remove HTML tags (Reddit Atom feeds return HTML-wrapped summaries)."""
+    return _HTML_TAG_RE.sub(" ", text).strip()
+
+
 def fetch_feed(url: str, source_name: str = "") -> list[Story]:
-    """Fetch a single RSS feed and return relevant stories."""
+    """Fetch a single RSS/Atom feed and return relevant stories."""
     feed = feedparser.parse(url)
     display = source_name or feed.feed.get("title", url)
     stories: list[Story] = []
 
     for entry in feed.entries:
-        title = entry.get("title", "")
-        summary = entry.get("summary", "")
+        title = _strip_html(entry.get("title", ""))
+        summary = _strip_html(entry.get("summary", ""))
 
         if not _is_relevant(title + " " + summary):
             continue
