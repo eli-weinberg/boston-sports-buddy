@@ -1,12 +1,11 @@
-"""Uses Claude to score and summarize Boston sports stories."""
+"""Scores and summarizes Boston sports stories via the configured LLM provider."""
 
 from __future__ import annotations
 
 import json
 
-import anthropic
-
-from src.config import get_anthropic_key, settings
+from src.agent.llm import complete
+from src.config import settings
 from src.sources.rss import Story
 
 _SYSTEM_PROMPT = """\
@@ -66,33 +65,22 @@ Stories:
 
 def score_stories(stories: list[Story]) -> list[dict]:
     """
-    Score a batch of stories with Claude.
+    Score a batch of stories via the configured LLM provider.
     Returns list of dicts: story, score, summary, category.
     """
     if not stories:
         return []
-
-    client = anthropic.Anthropic(api_key=get_anthropic_key())
-    model = settings.get("scoring", {}).get("model", "claude-sonnet-5")
 
     stories_text = "\n\n".join(
         f"[{i}] SOURCE: {s.source}\nTITLE: {s.title}\n{s.summary[:400]}"
         for i, s in enumerate(stories)
     )
 
-    message = client.messages.create(
-        model=model,
-        max_tokens=4096,
+    raw = complete(
         system=_SYSTEM_PROMPT,
-        messages=[
-            {
-                "role": "user",
-                "content": _SCORE_PROMPT.format(stories=stories_text),
-            }
-        ],
-    )
-
-    raw = message.content[0].text.strip()
+        user=_SCORE_PROMPT.format(stories=stories_text),
+        max_tokens=4096,
+    ).strip()
     if raw.startswith("```"):
         raw = raw.split("```")[1]
         if raw.startswith("json"):

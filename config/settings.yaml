@@ -30,9 +30,11 @@ sources:
 delivery:
   channel: console   # console | slack | email
 
-# ── Claude scoring ─────────────────────────────────────────────────────────
+# ── LLM scoring ────────────────────────────────────────────────────────────
 scoring:
-  model: claude-sonnet-5
-  top_n: 8           # How many stories to highlight per run
-  min_score: 0.55    # Minimum score to surface (0–1)
-  batch_size: 30     # Stories per Claude API call
+  provider: anthropic      # anthropic | openai
+  model: claude-sonnet-5   # anthropic: claude-sonnet-5, claude-haiku-4-5-20251001
+                           # openai:    gpt-4o, gpt-4o-mini, o3-mini
+  top_n: 8                 # How many stories to highlight per run
+  min_score: 0.55          # Minimum score to surface (0–1)
+  batch_size: 30           # Stories per LLM API call
